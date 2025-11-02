@@ -37,13 +37,15 @@ public class Pathfinding : MonoBehaviour
 
     private void Start()
     {
+        GenerateRandomGrid(gridWidth, gridHeight, obstacleProbability);
         FindPath(start, goal);
     }
 
     private void OnDrawGizmos()
     {
+        if (grid == null) return;
+
         float cellSize = 1f;
-        GenerateRandomGrid(gridWidth, gridHeight, obstacleProbability);
         // Draw grid cells
         for (int y = 0; y < grid.GetLength(0); y++)
         {

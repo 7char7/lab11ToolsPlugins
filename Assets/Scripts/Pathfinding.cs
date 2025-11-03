@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
 
@@ -13,15 +14,15 @@ public class Pathfinding : MonoBehaviour
     public Vector2Int start;
     public Vector2Int goal;
 
+    [Header("Manual obstacle placement")]
+    public Vector2Int obstaclePosition;
+
 
     public bool done = false;
-
-
 
     private List<Vector2Int> path = new List<Vector2Int>();
     private Vector2Int next;
     private Vector2Int current;
-
 
     private Vector2Int[] directions = new Vector2Int[]
     {
@@ -30,8 +31,6 @@ public class Pathfinding : MonoBehaviour
         new Vector2Int(0, 1),
         new Vector2Int(0, -1)
     };
-
-   
 
     private int[,] grid;
 
@@ -46,7 +45,7 @@ public class Pathfinding : MonoBehaviour
         if (grid == null) return;
 
         float cellSize = 1f;
-        // Draw grid cells
+        //draw grid cells
         for (int y = 0; y < grid.GetLength(0); y++)
         {
             for (int x = 0; x < grid.GetLength(1); x++)
@@ -75,7 +74,8 @@ public class Pathfinding : MonoBehaviour
 
     private bool IsInBounds(Vector2Int point)
     {
-        return point.x >= 0 && point.x < grid.GetLength(1) && point.y >= 0 && point.y < grid.GetLength(0);
+        return point.x >= 0 && point.x < grid.GetLength(1) &&
+               point.y >= 0 && point.y < grid.GetLength(0);
     }
 
     private void FindPath(Vector2Int start, Vector2Int goal)
@@ -122,70 +122,78 @@ public class Pathfinding : MonoBehaviour
         }
         path.Add(start);
         path.Reverse();
+
+        Debug.Log($"Path found with {path.Count} steps.");
     }
 
-
-    void GenerateRandomGrid(int width, int height, float obStacleProbability)
+    // Create random grid
+    void GenerateRandomGrid(int width, int height, float obstacleProbability)
     {
-        grid = new int[width, height];
-        for(int i = 0; i < width; i++)
+        grid = new int[height, width]; 
+
+        for (int y = 0; y < height; y++)
         {
-            for(int j = 0; j < height; j++)
+            for (int x = 0; x < width; x++)
             {
-                int _rand = Random.Range(0, 100);
-
-                //Randomize if the cell is an obstacle
-                if(_rand < obstacleProbability)
-                {
-                    _rand = 1;
-                }
-                else
-                {
-                    _rand = 0;
-                }
-
-                    grid[i, j] = _rand;
+                grid[y, x] = Random.value < obstacleProbability ? 1 : 0;
             }
         }
 
-        //Prevent the start and end positions from not being in the grid
-        //Start
-        if(start.x < 0)
+        //prevent start and goal from being obstacles
+        grid[start.y, start.x] = 0;
+        grid[goal.y, goal.x] = 0;
+    }
+
+    //adds the obsticles
+    public void AddObstacle(Vector2Int position)
+    {
+        if (grid == null)
         {
-            start.x = 0;
-        }
-        if (start.x >= width)
-        {
-            start.x = width - 1;
-        }
-        if(start.y < 0)
-        {
-            start.y = 0;
-        }
-        if(start.y >= height)
-        {
-            start.y = height -1;
+            Debug.LogWarning("Grid not generated yet!");
+            return;
         }
 
-        //End
-        if (goal.x < 0)
+        if (position.x >= 0 && position.x < grid.GetLength(1) &&
+            position.y >= 0 && position.y < grid.GetLength(0))
         {
-            goal.x = 0;
+            grid[position.y, position.x] = 1;
         }
-        if (goal.x >= width)
+        else
         {
-            goal.x = width - 1;
+            Debug.LogWarning("Position out of grid bounds!");
         }
-        if (goal.y < 0)
-        {
-            goal.y = 0;
-        }
-        if (goal.y >= height)
-        {
-            goal.y = height - 1;
-        }
+    }
 
-        //generate obstacles
-    
+    // added the button to the 3 dots thing in corner, made better under but keeping here
+    [ContextMenu("Add Obstacle At Coordinates")]
+    public void AddObstacleFromInspector()
+    {
+        AddObstacle(obstaclePosition);
+        Debug.Log($"Added obstacle manually at {obstaclePosition}");
+
+        // Optional: update path visualization
+        path.Clear();
+        FindPath(start, goal);
+    }
+
+}
+
+
+//makes button to add obsticles 
+#if UNITY_EDITOR
+
+[CustomEditor(typeof(Pathfinding))]
+public class PathfindingEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        DrawDefaultInspector();
+
+        Pathfinding script = (Pathfinding)target;
+        if (GUILayout.Button("Add Obstacle At Coordinates"))
+        {
+            script.AddObstacleFromInspector();
+        }
     }
 }
+#endif

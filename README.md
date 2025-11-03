@@ -1,13 +1,25 @@
 How does each pathfinding algorithms calculate and prioritize paths?
+
 Bfs
+
 This algorithm generates a grid representing the terrain in terms of cells, tracks the start, goal, and last traversed position/cell in the path, then runs through a queue of the surrounding cells to determine if each cell is within bounds to be able to add as part of the path.  If it is, the cell is added to the pathway between the start and goal.
+
 A*
+
 This algorithm generates a grid representing the terrain in terms of cells, and creates a priority queue to keep track of the cells that are in the path.  For each cell in the grid, it compares its distance from the previous cell in the path and the goal position against all the other cells to determine which cell is the most efficient to add to the path.  
+
 Dijkstra
+
 This algorithm is similar to A* but leaves open functionality for some cells being more important or having a higher cost to move through for different types of terrain. It generates a grid to represent the terrain in terms of cells, and uses a priority queue to keep track of the cells in the path.  It also keeps track of each cell’s position, and iterates through them in a fashion similar to A*.  However, it enqueues and dequeues from the path (removing and adding cells to the path) based on the cost of the terrain to determine not only the shortest path, but also the path with the least cost.
+
 What challenges arise when dynamically updating obstacles in real-time?
+
 Some challenges that may arise is keeping the goal and start positions within the terrain’s bounds and out of the obstacles’ way, updating the path based on changing start and end positions, and recalculating the path frequently when obstacles are added dynamically to avoid them being in the path.
+
 Which algorithm should you choose and how should you adapt it for larger grids or open-world settings?
+
 For larger terrains, it depends on what the terrain is like.  If the terrain is all of equal difficulty and static (in that it doesn’t have obstacles that load in regularly and instead stay in the same place every time the area is encountered), A* would be the best due to its efficiency in finding the shortest path.  However, if the path has dynamically loading obstacles or areas that are considered more difficult to traverse, a Dijkstra algorithm would be best because of its consideration of a “cost” for each cell in the terrain.
+
 What would your approach be if you were to add weighted cells (e.g., "difficult terrain" areas)?
+
 In this case, a Dijkstra algorithm would  be the most optimal approach. Each cell moved through can add an assigned cost based on its difficulty, which is added to a cost while determining the path to make sure the path chosen is a mix between the shortest with the lowest cost.
